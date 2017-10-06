@@ -17,12 +17,18 @@ public class PlayMusicService extends Service {
     @Override
     public void onCreate() {
         mp = MediaPlayer.create(this,R.raw.jaholey);
+
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 stopSelf();
             }
         });
+        return Service.START_NOT_STICKY;
     }
 
     @Nullable
@@ -34,12 +40,6 @@ public class PlayMusicService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);
-    }
-
-    public class LocalBinder extends Binder {
-        PlayMusicService getService(){
-            return PlayMusicService.this;
-        }
     }
 
     @Override
@@ -56,13 +56,21 @@ public class PlayMusicService extends Service {
             mp.start();
         }
     }
+
     public void pause(){
         if(mp.isPlaying()){
             mp.pause();
         }
     }
+
     public boolean isPlaying(){
         return mp.isPlaying();
+    }
+
+    public class LocalBinder extends Binder {
+        PlayMusicService getService() {
+            return PlayMusicService.this;
+        }
     }
 
 }
