@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,21 +17,19 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
     public static final String KEY_SONG = "song";
+    private static final String TAG = MainActivity.class.getSimpleName();
     private Button mDownloadButton, mPlayPauseButton;
-    private PlayMusicService mPlayMusicService;
     private boolean mBound = false;
+    private Messenger mServiceMessenger;
+    private int currentStateOfMusic = PlayMusicService.STOP_MUSIC;
     public ServiceConnection mConnection = new ServiceConnection() {
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+        public void onServiceConnected(ComponentName name, IBinder binder) {
             Log.d(TAG,"onServiceConnected");
-            PlayMusicService.LocalBinder binder = (PlayMusicService.LocalBinder) service;
-            mPlayMusicService = binder.getService();
+            mServiceMessenger = new Messenger(binder);
+            currentStateOfMusic = PlayMusicService.PLAY_MUSIC;
             mBound = true;
-            if(mPlayMusicService.isPlaying()){
-                mPlayPauseButton.setText("never I will do this!");
-            }
         }
 
         @Override
@@ -86,12 +87,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(mBound){
-                    if(mPlayMusicService.isPlaying()){
-                        mPlayMusicService.pause();
-                        mPlayPauseButton.setText("Play");
-                    }else {
-                        mPlayMusicService.play();
+                    if (currentStateOfMusic == PlayMusicService.PLAY_MUSIC) {
+                        Message message = Message.obtain();
+                        message.arg1 = PlayMusicService.PLAY_MUSIC;
+                        currentStateOfMusic = PlayMusicService.STOP_MUSIC;
+                        try {
+                            mServiceMessenger.send(message);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
                         mPlayPauseButton.setText("Pause");
+                    }else {
+                        Message message = Message.obtain();
+                        message.arg1 = PlayMusicService.STOP_MUSIC;
+                        currentStateOfMusic = PlayMusicService.PLAY_MUSIC;
+                        try {
+                            mServiceMessenger.send(message);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                        mPlayPauseButton.setText("Play");
                     }
                 }
             }

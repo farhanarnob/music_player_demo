@@ -3,8 +3,10 @@ package com.teamtreehouse.musicmachine;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.support.annotation.Nullable;
 
 /**
@@ -12,12 +14,15 @@ import android.support.annotation.Nullable;
  */
 
 public class PlayMusicService extends Service {
-    private final IBinder mBinder = new LocalBinder();
+    public static final int PLAY_MUSIC = 1;
+    public static final int STOP_MUSIC = 2;
+    Messenger mMessenger;
+    PlayingMusicHandler mHandler = new PlayingMusicHandler();
     MediaPlayer mp;
     @Override
     public void onCreate() {
         mp = MediaPlayer.create(this,R.raw.jaholey);
-
+        mMessenger = new Messenger(mHandler);
     }
 
     @Override
@@ -34,7 +39,7 @@ public class PlayMusicService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return mMessenger.getBinder();
     }
 
     @Override
@@ -63,14 +68,21 @@ public class PlayMusicService extends Service {
         }
     }
 
-    public boolean isPlaying(){
-        return mp.isPlaying();
-    }
-
-    public class LocalBinder extends Binder {
-        PlayMusicService getService() {
-            return PlayMusicService.this;
+    class PlayingMusicHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.arg1) {
+                case PLAY_MUSIC: {
+                    play();
+                    break;
+                }
+                case STOP_MUSIC: {
+                    pause();
+                    break;
+                }
+            }
         }
     }
+
 
 }
