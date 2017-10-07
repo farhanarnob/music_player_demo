@@ -3,11 +3,10 @@ package com.teamtreehouse.musicmachine;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Created by ${farhanarnob} on ${06-Oct-16}.
@@ -16,13 +15,17 @@ import android.support.annotation.Nullable;
 public class PlayMusicService extends Service {
     public static final int PLAY_MUSIC = 1;
     public static final int STOP_MUSIC = 2;
-    Messenger mMessenger;
-    PlayingMusicHandler mHandler = new PlayingMusicHandler();
+    public static final int IS_PLAYING = 3;
+    public static final int NOT_PLAYING = 4;
+    public static final int CHANGE_ONLY_PLAY_BUTTON_TEXT = 5;
+    private static final String TAG = PlayMusicService.class.getSimpleName();
+
+    Messenger mMessenger = new Messenger(new PlayHandler(this));
     MediaPlayer mp;
     @Override
     public void onCreate() {
+        Log.d(TAG, "onCreate Service");
         mp = MediaPlayer.create(this,R.raw.jaholey);
-        mMessenger = new Messenger(mHandler);
     }
 
     @Override
@@ -57,32 +60,18 @@ public class PlayMusicService extends Service {
      * Method for clients
      */
     public void play(){
-        if(!mp.isPlaying()){
-            mp.start();
-        }
+        Log.d(TAG, "Play");
+        mp.start();
     }
 
     public void pause(){
-        if(mp.isPlaying()){
-            mp.pause();
-        }
+        Log.d(TAG, "Pause");
+        mp.pause();
+
     }
 
-    class PlayingMusicHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.arg1) {
-                case PLAY_MUSIC: {
-                    play();
-                    break;
-                }
-                case STOP_MUSIC: {
-                    pause();
-                    break;
-                }
-            }
-        }
+    public boolean isPlaying() {
+        Log.d(TAG, mp.isPlaying() + "Is playing");
+        return mp.isPlaying();
     }
-
-
 }

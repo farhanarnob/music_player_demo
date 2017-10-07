@@ -9,63 +9,50 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import static com.teamtreehouse.musicmachine.PlayMusicService.CHANGE_ONLY_PLAY_BUTTON_TEXT;
+import static com.teamtreehouse.musicmachine.PlayMusicService.IS_PLAYING;
+
 public class MainActivity extends AppCompatActivity {
     public static final String KEY_SONG = "song";
     private static final String TAG = MainActivity.class.getSimpleName();
+    public Messenger mActivityMessenger = new Messenger(new ActivityHandler(this));
+    Messenger mPlayMessenger;
     private Button mDownloadButton, mPlayPauseButton;
     private boolean mBound = false;
-    private Messenger mServiceMessenger;
-    private int currentStateOfMusic = PlayMusicService.STOP_MUSIC;
     public ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
-            Log.d(TAG,"onServiceConnected");
-            mServiceMessenger = new Messenger(binder);
-            currentStateOfMusic = PlayMusicService.PLAY_MUSIC;
             mBound = true;
+            mPlayMessenger = new Messenger(binder);
+            Message message = Message.obtain();
+            message.arg1 = IS_PLAYING;
+            message.arg2 = CHANGE_ONLY_PLAY_BUTTON_TEXT;
+            message.replyTo = mActivityMessenger;
+            try {
+                mPlayMessenger.send(message);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG,"onServiceDisconnected");
             mBound = false;
         }
     };
 
 
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        Log.d(TAG,"onPostResume");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG,"onResume");
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        Log.d(TAG,"onPostCreate");
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Intent intent = new Intent(this,PlayMusicService.class);
-        startService(intent);
-        Log.d(TAG,"onCreate");
+        Log.d(TAG, "onCreate MainActivity");
         mDownloadButton = (Button) findViewById(R.id.downloadButton);
 
         mDownloadButton.setOnClickListener(new View.OnClickListener() {
@@ -86,28 +73,15 @@ public class MainActivity extends AppCompatActivity {
         mPlayPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mBound){
-                    if (currentStateOfMusic == PlayMusicService.PLAY_MUSIC) {
-                        Message message = Message.obtain();
-                        message.arg1 = PlayMusicService.PLAY_MUSIC;
-                        currentStateOfMusic = PlayMusicService.STOP_MUSIC;
-                        try {
-                            mServiceMessenger.send(message);
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-                        mPlayPauseButton.setText("Pause");
-                    }else {
-                        Message message = Message.obtain();
-                        message.arg1 = PlayMusicService.STOP_MUSIC;
-                        currentStateOfMusic = PlayMusicService.PLAY_MUSIC;
-                        try {
-                            mServiceMessenger.send(message);
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-                        mPlayPauseButton.setText("Play");
-                    }
+                Intent intent = new Intent(MainActivity.this, PlayMusicService.class);
+                startService(intent);
+                Message message = Message.obtain();
+                message.arg1 = IS_PLAYING;
+                message.replyTo = mActivityMessenger;
+                try {
+                    mPlayMessenger.send(message);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -124,16 +98,17 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Defines callback service for service binding, passed to bindService
      */
-
-
     @Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG,"onStop");
         if(mBound){
-            Log.d(TAG,"unBound");
             unbindService(mConnection);
             mBound = false;
         }
+    }
+
+    public void changePlayButtonText(String buttonText) {
+        mPlayPauseButton.setText(buttonText);
     }
 }
