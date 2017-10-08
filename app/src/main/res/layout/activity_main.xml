@@ -11,17 +11,26 @@
     tools:context="com.teamtreehouse.musicmachine.MainActivity">
 
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Download"
         android:id="@+id/downloadButton"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
-    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="play"
-        android:id="@+id/play_pause_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Download" />
+
+    <Button
+        android:id="@+id/playButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_above="@id/downloadButton"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:text="Play" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/playButton"
+        android:layout_marginBottom="@dimen/activity_vertical_margin" />
+
 </RelativeLayout>

@@ -4,18 +4,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 
-import static com.teamtreehouse.musicmachine.PlayMusicService.CHANGE_ONLY_PLAY_BUTTON_TEXT;
-import static com.teamtreehouse.musicmachine.PlayMusicService.IS_PLAYING;
-import static com.teamtreehouse.musicmachine.PlayMusicService.NOT_PLAYING;
-import static com.teamtreehouse.musicmachine.PlayMusicService.PLAY_MUSIC;
-import static com.teamtreehouse.musicmachine.PlayMusicService.STOP_MUSIC;
-
-/**
- * Created by ${farhanarnob} on ${06-Oct-16}.
- */
-
 public class ActivityHandler extends Handler {
-    MainActivity mMainActivity;
+    private MainActivity mMainActivity;
 
     public ActivityHandler(MainActivity mainActivity) {
         mMainActivity = mainActivity;
@@ -23,36 +13,37 @@ public class ActivityHandler extends Handler {
 
     @Override
     public void handleMessage(Message msg) {
-        switch (msg.arg1) {
-            case IS_PLAYING: {
-                if (msg.arg2 == CHANGE_ONLY_PLAY_BUTTON_TEXT) {
-                    mMainActivity.changePlayButtonText("Pause");
-                } else {
-                    Message message = Message.obtain();
-                    message.arg1 = STOP_MUSIC;
-                    try {
-                        msg.replyTo.send(message);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                    mMainActivity.changePlayButtonText("Play");
+        if (msg.arg1 == 0) {
+            // Music is NOT playing
+            if (msg.arg2 == 1) {
+                mMainActivity.changePlayButtonText("Play");
+            } else {
+                // Play the music
+                Message message = Message.obtain();
+                message.arg1 = 0;
+                try {
+                    msg.replyTo.send(message);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-                break;
+                // Change play Button to say "Pause"
+                mMainActivity.changePlayButtonText("Pause");
             }
-            case NOT_PLAYING: {
-                if (msg.arg2 == CHANGE_ONLY_PLAY_BUTTON_TEXT) {
-                    mMainActivity.changePlayButtonText("Play");
-                } else {
-                    Message message = Message.obtain();
-                    message.arg1 = PLAY_MUSIC;
-                    try {
-                        msg.replyTo.send(message);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                    mMainActivity.changePlayButtonText("Pause");
+        } else if (msg.arg1 == 1) {
+            // Music is playing
+            if (msg.arg2 == 1) {
+                mMainActivity.changePlayButtonText("Pause");
+            } else {
+                // Pause the music
+                Message message = Message.obtain();
+                message.arg1 = 1;
+                try {
+                    msg.replyTo.send(message);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-                break;
+                // Change play Button to say "Play"
+                mMainActivity.changePlayButtonText("Play");
             }
         }
     }
