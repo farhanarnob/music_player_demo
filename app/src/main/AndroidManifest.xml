@@ -16,9 +16,12 @@
             </intent-filter>
         </activity>
         <service android:name=".DownloadService"/>
+        <service android:name=".DownloadIntentService" />
         <service
-            android:name=".PlayMusicService"
-            android:process=":playerProcess" />
+            android:name=".PlayerService"
+            android:process=":playerprocess" />
+
+        <activity android:name=".DetailActivity" />
     </application>
 
 </manifest>
