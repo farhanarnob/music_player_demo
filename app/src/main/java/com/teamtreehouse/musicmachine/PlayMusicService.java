@@ -1,5 +1,6 @@
 package com.teamtreehouse.musicmachine;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -30,10 +31,15 @@ public class PlayMusicService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Notification.Builder noBuilder = new Notification.Builder(this);
+        noBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        Notification notification = noBuilder.build();
+        startForeground(11, notification);
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 stopSelf();
+                stopForeground(true);
             }
         });
         return Service.START_NOT_STICKY;
