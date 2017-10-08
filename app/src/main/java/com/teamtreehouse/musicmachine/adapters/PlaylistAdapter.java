@@ -1,13 +1,18 @@
 package com.teamtreehouse.musicmachine.adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.teamtreehouse.musicmachine.DetailActivity;
+import com.teamtreehouse.musicmachine.MainActivity;
 import com.teamtreehouse.musicmachine.R;
 import com.teamtreehouse.musicmachine.models.Song;
 
@@ -16,6 +21,7 @@ import com.teamtreehouse.musicmachine.models.Song;
  */
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.SongViewHolder> {
 
+    private static final String TAG = PlaylistAdapter.class.getSimpleName();
     private Song[] mSongs;
     private Context mContext;
     private SongViewHolder mViewHolder;
@@ -66,7 +72,13 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.SongVi
 
         @Override
         public void onClick(View v) {
-
+            Log.d(TAG, "onClick");
+            Intent intent = new Intent(mContext, DetailActivity.class);
+            intent.putExtra(MainActivity.EXTRA_SONG, mSongs[getAdapterPosition()]);
+            intent.putExtra(MainActivity.EXTRA_LIST_POSITION, getAdapterPosition());
+            Log.d(TAG, "onClick1");
+            ((Activity) mContext).startActivityForResult(intent, MainActivity.REQUEST_FAVORITE);
+            Log.d(TAG, "onClick2");
         }
     }
 }
